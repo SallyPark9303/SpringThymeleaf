@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>전체 앨범 리스트</title>
+    <style>
+        h3 {
+          margin-left: 15px;
+          margin-bottom: 15px;
+        }
+        td {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <button  th:onclick="saveItems()" class="btn btn-primary">저장</button>
+</div>
+<h3>전체 앨범 리스트</h3>
+<table id="mTable">
+    <tr>
+        <th>가수 이름</th>
+        <th>가수 나이</th>
+        <th>앨범 목록</th>
+        <th>추가</th>
+    </tr>
+    <tr th:each="singer, status : ${list}">
+        <td th:text="${singer.name}"></td>
+        <td th:text="${singer.age}"></td>
+        <td>
+                <div class="d-flex">
+                    <table th:id="|table${status.index}|" >
+                        <tbody>
+                        <tr th:each="album , stat : ${singer.alubums}">
+                            <td>
+                                <input th:id="|singer.alubums[${stat.index}].albumName|"  th:value="${album.albumName}"/>
+                            </td>
+                            <td>
+                                <input th:value="${album.albumVersion}"/>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger btn_row_delete">삭제</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+        </td>
+        <td>
+            <button th:tableIdx="${status.index}"  class="btn btn-primary" th:id="|singer[${status.index}]|"    th:onclick="add_last_row(this.getAttribute('tableIdx'))">마지막줄추가</button>
+        </td>
+    </tr>
+</table>
+
+</body>
+<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+        $(document).ready(function($)
+        {
+           // 테이블 row 삭제
+            $(document).on('click','.btn_row_delete',function(e)
+              {
+                var r = $(this).closest('tr').remove();
+
+              });
+        });
+
+        function add_last_row(idx){
+
+              var tableId = '#table' +idx
+              console.log(tableId)
+              var tableBody =  $(document).find(tableId).find('tbody');
+              console.log(tableBody)
+              var trLast = tableBody.find("tr:last");
+                    var trNew = trLast.clone();
+                    trNew.find(':text').val('');
+                    trLast.after(trNew);
+        }
+
+
+        function addRow(tableIdx){
+            var tableId = '#table' +tableIdx
+            var here = $(document).find(tableId).find('tbody');
+            console.log(here)
+           var r = $(here).closest('tr').clone();
+           $.each(r.find('td'), function(i1,v1)
+           {
+             $(here).html('');
+           });
+          $(here).closest('tr').after(r);
+        }
+
+       function saveItems(){
+            var dataArray =[];
+            var table =  document.getElementById('mTable');
+            var rows = table.rows;
+
+            //데이터
+            var da1 ,da2,da3;
+
+
+            for(i=1; i<rows.length; i++){
+                var row  = rows[i];
+                var tdsNum = row.childElementCount;
+                console.log(row.cells[0].innerText)
+                var arr = [];
+                da1 =row.cells[0].innerText;
+                da2= row.cells[1].innerText
+
+
+                var subTable = row.cells[2].querySelector('table');
+                var subRows = subTable.rows;
+                console.log('subRow' ,subRows)
+                if(subRows.length !=0){
+                     var subArr = []
+                       var subItems =[];
+                     for(j=0; j<subRows.length; j++){
+
+                       var sRow  = subRows[j];
+                       var tdsNum = sRow.childElementCount;
+                        var data1 , data2;
+                        var $$input = sRow.querySelectorAll('input');
+
+                        if($$input[0] != undefined) {  console.log(data1); data1 = $$input[0].value;  }
+                        if($$input[1] != undefined) { console.log(data1); data2 = $$input[1].value;  }
+
+                        var itms = {
+                            "albumName" : data1,
+                            "albumVersion" :data2
+                        }
+                        subItems.push(itms);
+                    }
+                         var d1 = {
+                             "name" : da1,
+                             "age" : da2,
+                             "alubums" : subItems
+                            }
+                         dataArray.push(d1);
+                }
+
+            }
+            console.log(dataArray)
+            var paramList = {
+            "param" : JSON.stringify(dataArray)
+            }
+
+            $.ajax({
+                type: "POST",
+                url : "/save",
+                data : JSON.stringify(dataArray),
+                contentType: "application/json; charset=utf-8;",
+                success : function(data){
+                        alert("저장되었습니다.");
+
+
+                },
+                error : function(e){
+                    alert("오류");
+                    console.log(e)
+                }
+            });
+
+
+       }
+   /*]]>*/
+</script>
+
+
+</html>

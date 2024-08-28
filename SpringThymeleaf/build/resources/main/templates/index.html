@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+출처: https://jddng.tistory.com/223 [IT 개발자들의 울타리:티스토리]
+<head>
+    <title>전체 앨범 리스트</title>
+    <style>
+        h3 {
+          margin-left: 15px;
+          margin-bottom: 15px;
+        }
+        td {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+    </style>
+</head>
+<body>
+<h3>전체 앨범 리스트</h3>
+<table>
+    <tr>
+        <th>가수 이름</th>
+        <th>가수 나이</th>
+        <th>앨범 목록</th>
+        <th>추가</th>
+    </tr>
+    <tr th:each="singer : ${list}">
+        <td th:text="${singer.name}"></td>
+        <td th:text="${singer.age}"></td>
+        <td>
+            <div th:each="album : ${singer.alubums}">
+                <input th:value="${album.albumName}"/>
+                <input th:value="${album.albumVersion}"/>
+            </div>
+
+        </td>
+    </tr>
+</table>
+</body>
+</html>
